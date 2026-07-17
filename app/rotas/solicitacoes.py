@@ -22,7 +22,7 @@ QUERY_SALDO = """
                     CASE
                         WHEN LOWER(tipo) = 'horas extra'
                             THEN TIME_TO_SEC(STR_TO_DATE(horas, '%%H:%%i'))
-                        WHEN LOWER(tipo) IN ('saida antecipada', 'compensacao')
+                        WHEN LOWER(tipo) IN ('saida antecipada', 'compensacao', 'saldo devedor')
                             THEN -TIME_TO_SEC(STR_TO_DATE(horas, '%%H:%%i'))
                         ELSE 0
                     END
@@ -45,7 +45,7 @@ QUERY_SALDO_PENDENTE = """
                     CASE
                         WHEN LOWER(tipo) = 'horas extra'
                             THEN TIME_TO_SEC(STR_TO_DATE(horas, '%%H:%%i'))
-                        WHEN LOWER(tipo) IN ('saida antecipada', 'compensacao')
+                        WHEN LOWER(tipo) IN ('saida antecipada', 'compensacao', 'saldo devedor')
                             THEN -TIME_TO_SEC(STR_TO_DATE(horas, '%%H:%%i'))
                         ELSE 0
                     END

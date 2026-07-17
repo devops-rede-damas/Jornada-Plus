@@ -21,6 +21,9 @@
                 <option value="saida antecipada" {% if solicitacao and solicitacao['tipo'] == 'saida antecipada' %}selected{% endif %}>
                     Saída Antecipada
                 </option>
+                <option value="saldo devedor" {% if solicitacao and solicitacao['tipo'] == 'saldo devedor' %}selected{% endif %}>
+                    Saldo Devedor
+                </option>
             </select>
         </div>
 

@@ -29,7 +29,7 @@ QUERY_COLABORADORES = """
                             CASE
                                 WHEN LOWER(tipo) = 'horas extra'
                                     THEN TIME_TO_SEC(STR_TO_DATE(horas, '%H:%i'))
-                                WHEN LOWER(tipo) IN ('saida antecipada', 'compensacao')
+                                WHEN LOWER(tipo) IN ('saida antecipada', 'compensacao', 'saldo devedor')
                                     THEN -TIME_TO_SEC(STR_TO_DATE(horas, '%H:%i'))
                                 ELSE 0
                             END
@@ -70,7 +70,7 @@ def painel_admin():
     if current_user.id == 3:
         filtro = "id <> 3"
     elif current_user.id == 4:
-        filtro = "id NOT IN (1, 2, 3, 4, 10)"
+        filtro = "id NOT IN (2, 3, 10)"
     elif current_user.id == 34:
         filtro = "1 = 1"
     else:
