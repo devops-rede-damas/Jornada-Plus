@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+{% block title %}Painel — Sistema de Aprovação{% endblock %}
+
+{% block content %}
+<div class="page-header" data-aos="fade-up">
+    <h2>Painel de Colaboradores</h2>
+    <p>Visão geral de horas e solicitações da equipe</p>
+</div>
+
+<div class="dash-grid">
+    <!-- Main: Tabela + Sidebar -->
+    <div class="dash-main" data-aos="fade-up" data-aos-delay="50">
+        <!-- Tabela de colaboradores (desktop) -->
+        <div class="table-wrapper dash-table-desktop">
+            <div class="table-header">
+                <h2>Colaboradores</h2>
+            </div>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Nome</th>
+                            <th>Chapa</th>
+                            <th>Saldo</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for colab in colabs %}
+                        <tr>
+                            <td>
+                                <a href="{{ url_for('painel.tabela_solicitacoes', colab_id=colab['id']) }}">
+                                    <img src="{{ url_for('static', filename='img/' + (colab['img_url'] or 'default.png')) }}"
+                                        alt="foto" class="avatar-sm">
+                                </a>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('painel.tabela_solicitacoes', colab_id=colab['id']) }}" 
+                                   style="color: var(--text-primary); font-weight: 500;">
+                                    {{ colab['nome'] }}
+                                </a>
+                            </td>
+                            <td>{{ colab['chapa'] }}</td>
+                            <td style="font-weight: 600;">{{ colab['qtd'] }}</td>
+                            <td>
+                                {% if colab['qtd'] == '00:00' %}
+                                    <span class="badge badge-neutral">Neutro</span>
+                                {% elif colab['qtd'].startswith('-') %}
+                                    <span class="badge badge-negative">Negativo</span>
+                                {% else %}
+                                    <span class="badge badge-positive">Positivo</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Cards de colaboradores (mobile) -->
+        <div class="dash-cards-mobile">
+            <div class="table-header">
+                <h2>Colaboradores</h2>
+            </div>
+            <div class="colab-cards-list">
+                {% for colab in colabs %}
+                <a href="{{ url_for('painel.tabela_solicitacoes', colab_id=colab['id']) }}" class="colab-card-mobile">
+                    <img src="{{ url_for('static', filename='img/' + (colab['img_url'] or 'default.png')) }}"
+                         alt="foto" class="avatar-sm">
+                    <div class="colab-card-info">
+                        <span class="colab-card-name">{{ colab['nome'] }}</span>
+                        <span class="colab-card-chapa">Chapa: {{ colab['chapa'] }}</span>
+                    </div>
+                    <div class="colab-card-right">
+                        <span class="colab-card-hours">{{ colab['qtd'] }}</span>
+                        {% if colab['qtd'] == '00:00' %}
+                            <span class="badge badge-neutral">Neutro</span>
+                        {% elif colab['qtd'].startswith('-') %}
+                            <span class="badge badge-negative">Negativo</span>
+                        {% else %}
+                            <span class="badge badge-positive">Positivo</span>
+                        {% endif %}
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="dash-sidebar">
+            <!-- Pendentes -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="ri-time-line"></i> Horas Pendentes
+                </div>
+                <div class="card-body">
+                    <ul class="pending-list">
+                        {% for colab in colabs %}
+                            {% if colab['pendente'] == true %}
+                            <li>
+                                <a href="{{ url_for('painel.tabela_solicitacoes', colab_id=colab['id']) }}">
+                                    {{ colab['nome'] }}
+                                </a>
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Gráfico -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="ri-bar-chart-2-line"></i> Horas por Colaborador
+                </div>
+                <div class="card-body chart-container">
+                    <canvas id="myChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabela de presentes (desktop) -->
+    <!--
+    <div class="table-wrapper dash-table-desktop" data-aos="fade-up" data-aos-delay="100">
+        <div class="table-header">
+            <h2>Presentes e Aniversários</h2>
+        </div>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Presente 1</th>
+                        <th>Presente 2</th>
+                        <th>Data de Nascimento</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for colab in colabs %}
+                    <tr>
+                        <td style="font-weight: 500;">{{ colab['nome'] }}</td>
+                        <td>{{ colab['presente1'] }}</td>
+                        <td>{{ colab['presente2'] }}</td>
+                        <td>{{ colab['data_nascimento'] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    -->
+    
+    <!-- Cards de presentes (mobile) -->
+    <!--
+    <div class="dash-cards-mobile" data-aos="fade-up" data-aos-delay="100">
+        <div class="table-header">
+            <h2>Presentes e Aniversários</h2>
+        </div>
+        <div class="colab-cards-list">
+            {% for colab in colabs %}
+            <div class="present-card-mobile">
+                <div class="present-card-top">
+                    <span class="colab-card-name">{{ colab['nome'] }}</span>
+                    <span class="colab-card-chapa"><i class="ri-cake-2-line"></i> {{ colab['data_nascimento'] }}</span>
+                </div>
+                <div class="present-card-gifts">
+                    {% if colab['presente1'] %}
+                    <span class="present-tag"><i class="ri-gift-line"></i> {{ colab['presente1'] }}</span>
+                    {% endif %}
+                    {% if colab['presente2'] %}
+                    <span class="present-tag"><i class="ri-gift-2-line"></i> {{ colab['presente2'] }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    -->
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    var ctx = document.getElementById('myChart').getContext('2d');
+    var myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: [{% for colab in colabs %}'{{ colab["nome"] }}',{% endfor %}],
+            datasets: [{
+                label: 'Horas',
+                data: [{% for colab in colabs %}{{ colab['qtd'].split(':')[0] }},{% endfor %}],
+                backgroundColor: 'rgba(79, 70, 229, 0.15)',
+                borderColor: 'rgba(79, 70, 229, 1)',
+                borderWidth: 2,
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: '#f3f4f6' }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { font: { size: 11 } }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

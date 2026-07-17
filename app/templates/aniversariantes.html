@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% block title %}Aniversariantes — Sistema de Aprovação{% endblock %}
+
+{% block content %}
+<!-- Balões decorativos -->
+<div class="balao esquerda vermelho"></div>
+<div class="balao direita azul"></div>
+<div class="balao esquerda verde" style="left: 10%; animation-delay: 3s;"></div>
+<div class="balao direita amarelo" style="right: 10%; animation-delay: 8s;"></div>
+<div class="balao esquerda vermelho" style="left: 15%; animation-delay: 1.5s;"></div>
+<div class="balao direita azul" style="right: 15%; animation-delay: 7.5s;"></div>
+
+<!-- Hero -->
+<div class="birthday-hero" data-aos="fade-up">
+    <div class="birthday-hero-grid">
+        <div>
+            <h1>Aniversariantes do mês</h1>
+            <p>
+                Todo mês, celebramos juntos os aniversários dos nossos funcionários.
+                Todos os colaboradores contribuem com R$20,00 via Pix para a compra de
+                um kit festa e presente. A chave Pix é
+                <strong>annemaryhilario@gmail.com</strong>.
+                <br><br>
+                Cada aniversariante pode escolher dois presentes de até R$90,00 cada,
+                que serão exibidos no perfil interno.
+            </p>
+        </div>
+        <div style="text-align: center;">
+            <img src="{{ url_for('static', filename='img/ballons.png') }}" alt="Balões">
+        </div>
+    </div>
+</div>
+
+<!-- Título -->
+<h2 class="birthday-section-title" data-aos="fade-up">
+    Aniversariantes de <span>{{ nome_mes }}</span>
+</h2>
+
+<!-- Lista de aniversariantes -->
+<div class="birthday-grid" data-aos="fade-up" data-aos-delay="100">
+    {% for aniversariante in aniversariantes %}
+    <div class="birthday-card">
+        <img src="{{ aniversariante.img }}" alt="Aniversariante">
+        <div class="birthday-name">{{ aniversariante.nome }}</div>
+        <div class="birthday-date">{{ aniversariante.data }}</div>
+        <!-- 
+            <div class="birthday-gifts">{{ aniversariante.presente1 }} ou {{ aniversariante.presente2 }}</div> 
+        -->
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Sugestões de presentes -->
+<h2 class="birthday-section-title" data-aos="fade-up">Sugestão de <span>Presentes</span></h2>
+
+<div class="suggestion-grid" data-aos="fade-up" data-aos-delay="50">
+    <div class="suggestion-card">
+        <h3>Gift Cards</h3>
+        <a href="https://zift.cards/" target="_blank">Zift Cards</a>
+        <a href="https://www.uber.com/br/pt-br/gift-cards/" target="_blank">Uber Gift Cards</a>
+        <a href="https://store.steampowered.com/digitalgiftcards/" target="_blank">Steam Gift Cards</a>
+    </div>
+    <div class="suggestion-card">
+        <h3>Livros e Ebooks</h3>
+        <a href="https://www.amazon.com.br/Livros/b?ie=UTF8&node=6740748011" target="_blank">Amazon Livros</a>
+    </div>
+    <div class="suggestion-card">
+        <h3>Acessórios e Escritório</h3>
+        <a href="https://loja.imaginarium.com.br/" target="_blank">Imaginarium</a>
+        <a href="https://www.nagem.com.br/" target="_blank">Nagem</a>
+    </div>
+</div>
+
+<!-- Onde comprar bolo -->
+<h2 class="birthday-section-title" data-aos="fade-up">Onde comprar <span>bolo</span>?</h2>
+
+<div class="suggestion-grid" data-aos="fade-up" data-aos-delay="50">
+    <div class="suggestion-card">
+        <h3>Flávia Falcão</h3>
+        <p>seg à sáb — 09:00–19:00</p>
+        <p>081 3241-7900</p>
+        <a href="http://www.flaviafalcao.com.br/?produtos&cat=3" target="_blank">Visitar Site</a>
+        <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d15802.48428749805!2d-34.9014497!3d-8.0379455!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x7ab18f8b39b7b99%3A0xb82c1941a6f4dffc!2sFl%C3%A1via%20Falc%C3%A3o%20%7C%20Confeitaria%20Artesanal!5e0!3m2!1spt-BR!2sbr!4v1729097443203!5m2!1spt-BR!2sbr" loading="lazy"></iframe>
+    </div>
+    <div class="suggestion-card">
+        <h3>Delikata Casa Forte</h3>
+        <p>seg à sáb — 11:00–19:00</p>
+        <p>(81) 3038-0606</p>
+        <a href="https://delikata.com.br/delikata/delikatacasaforte" target="_blank">Visitar Site</a>
+        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d63210.03571749418!2d-34.933071429948775!3d-8.03731279200504!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x7ab1907a98b4095%3A0xfb78965b6772ae56!2sDelikata!5e0!3m2!1spt-BR!2sbr!4v1729097156208!5m2!1spt-BR!2sbr" loading="lazy"></iframe>
+    </div>
+    <div class="suggestion-card">
+        <h3>Simone Barros</h3>
+        <p>seg à sáb — 11:00–18:30</p>
+        <p>(81) 3038-2135</p>
+        <a href="https://taplink.cc/doceriasimonebarrospe" target="_blank">Visitar Site</a>
+        <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d15802.488493875828!2d-34.9196972!3d-8.0378375!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x7ab19a793a6b819%3A0xc1dfaf79421c6f89!2sSimone%20Barros%20-%20Doceria!5e0!3m2!1spt-BR!2sbr!4v1729097286489!5m2!1spt-BR!2sbr" loading="lazy"></iframe>
+    </div>
+</div>
+
+<!-- Almoço -->
+<h2 class="birthday-section-title" data-aos="fade-up">Sugestões de <span>Almoço</span></h2>
+
+<div class="suggestion-grid" data-aos="fade-up" data-aos-delay="50" style="margin-bottom: 3rem;">
+    <div class="suggestion-card">
+        <h3>Porto do Camarão</h3>
+        <p>Peixes e frutos do mar — $$ — ter à dom</p>
+        <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d15802.461762947714!2d-34.9022649!3d-8.0385238!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x7ab19015d15cd91%3A0xb9c52ece60de4648!2sPorto%20do%20Camar%C3%A3o!5e0!3m2!1spt-BR!2sbr!4v1729100970221!5m2!1spt-BR!2sbr" loading="lazy"></iframe>
+    </div>
+    <div class="suggestion-card">
+        <h3>Ta San Yuen</h3>
+        <p>Comida chinesa — $$ — dom à dom 11h–21h</p>
+        <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d15802.353795698664!2d-34.8945577!3d-8.0412952!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x7ab18f1818311df%3A0x82ca2d458e1eb6d9!2sRestaurante%20Ta%20San%20Yuen!5e0!3m2!1spt-BR!2sbr!4v1729100644947!5m2!1spt-BR!2sbr" loading="lazy"></iframe>
+    </div>
+    <div class="suggestion-card">
+        <h3>Terraço Self Service</h3>
+        <p>Self service — $$ — seg à sáb 11:30–15:00</p>
+        <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d15802.454658207775!2d-34.9007455!3d-8.0387062!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x7ab18f8d5bbf5c3%3A0xe692da257e0abb95!2sTerra%C3%A7o%20Self%20Service!5e0!3m2!1spt-BR!2sbr!4v1729100890760!5m2!1spt-BR!2sbr" loading="lazy"></iframe>
+    </div>
+</div>
+{% endblock %}

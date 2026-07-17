@@ -1,0 +1,29 @@
+# Ambiente virtual
+venv/
+.venv/
+
+# Variáveis de ambiente (contém credenciais)
+.env
+
+# Cache do Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Arquivos de upload
+app/static/arquivos/*
+!app/static/arquivos/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+
+# Backups
+*.bak
+app/templates/_backup/
+app/static/img/backup/
+
+# Sistema operacional
+Thumbs.db
+Desktop.ini
+.DS_Store

@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block title %}Nova Solicitação — Sistema de Aprovação{% endblock %}
+
+{% block content %}
+<div class="page-header" data-aos="fade-up">
+    <h2>{{ 'Editar Solicitação' if solicitacao else 'Nova Solicitação' }}</h2>
+    <p>Preencha os dados da sua solicitação de ponto</p>
+</div>
+
+<div class="form-card" data-aos="fade-up" data-aos-delay="50">
+    <form method="post" action="{{ url_for('solicitacoes.listar_solicitacoes') }}" enctype="multipart/form-data" id="formSolicitacao">
+        <div class="form-group">
+            <label for="tipo" class="form-label">Tipo</label>
+            <select id="tipo" name="tipo" class="form-control form-select" required>
+                <option value="horas extra" {% if solicitacao and solicitacao['tipo'] == 'horas extra' %}selected{% endif %}>
+                    Horas Extra
+                </option>
+                <option value="compensacao" {% if solicitacao and solicitacao['tipo'] == 'compensacao' %}selected{% endif %}>
+                    Compensação
+                </option>
+                <option value="saida antecipada" {% if solicitacao and solicitacao['tipo'] == 'saida antecipada' %}selected{% endif %}>
+                    Saída Antecipada
+                </option>
+            </select>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="dia" class="form-label">Referente ao dia</label>
+                <input id="dia" type="date" class="form-control" required name="data_acontecimento"
+                    value="{{ solicitacao['dia_acontecimento'] if solicitacao else '' }}">
+            </div>
+
+            <div class="form-group">
+                <label for="horas" class="form-label">Quantidade de horas</label>
+                <input id="horas" type="text" class="form-control" name="horas" required
+                    placeholder="HH:MM"
+                    value="{{ solicitacao['horas'] if solicitacao else '' }}">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="justificativa" class="form-label">Justificativa</label>
+            <textarea id="justificativa" name="justificativa" class="form-control" required
+                placeholder="Descreva o motivo da solicitação">{{ solicitacao['justificativa'] if solicitacao else '' }}</textarea>
+        </div>
+
+        <div class="form-group form-file">
+            <label for="arquivos" class="form-label">Arquivos</label>
+            <input id="arquivos" type="file" class="form-control" name="arquivos" multiple>
+            <span class="form-text">Formatos aceitos: .jpg, .png, .pdf</span>
+        </div>
+
+        {% if solicitacao and solicitacao['links_evidencias'] %}
+        <div class="form-group">
+            <label class="form-label">Arquivos já enviados</label>
+            <div style="font-size: .8125rem; color: var(--text-secondary);">
+                {% for link in solicitacao['links_evidencias'].split(',') %}
+                    <div>{{ link[7:] if link|length > 7 else link }}</div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <input type="hidden" id="solicitacao_id" name="solicitacao_id"
+            value="{{ solicitacao['id'] if solicitacao else '' }}">
+
+        <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+            <button type="button" class="btn btn-primary" onclick="confirmarAcao('Salvar solicitação', 'Tem certeza que deseja salvar esta solicitação?', function(){ document.getElementById('formSolicitacao').submit(); })">
+                <i class="ri-save-line"></i> Salvar
+            </button>
+            <a href="{{ url_for('solicitacoes.listar_solicitacoes') }}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var horasInput = document.getElementById('horas');
+        horasInput.addEventListener('input', function (e) {
+            var valor = e.target.value.replace(/\D/g, '');
+            if (valor.length >= 2) {
+                valor = valor.slice(0, 2) + ':' + valor.slice(2, 4);
+            }
+            e.target.value = valor;
+        });
+    });
+</script>
+{% endblock %}

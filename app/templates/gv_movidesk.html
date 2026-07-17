@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <title>GVTIC</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+  <style>
+    body{font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif; margin:24px; background:#0f172a; color:#e2e8f0}
+    h1{margin:0 0 12px}
+    .grid{display:grid; gap:16px}
+    .cards.kpi-row {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .cards.kpi-row .card {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+    .card{background:#111827; border:1px solid #1f2937; border-radius:14px; padding:16px}
+    .label{font-size:24px; color:#94a3b8}
+    .value{font-size:40px; font-weight:700; line-height:1.1; margin-top:4px}
+    .row{
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      width: 100%;
+      max-width: 100%;
+      margin-left: 0;
+      flex-wrap: nowrap;
+    }
+    .card.chart-card, .card.sla-card {
+      width: 50%;
+      max-width: 50%;
+      min-width: 260px;
+    }
+    .bar-container {
+      width: 100%;
+      height: 420px;
+      padding-left: 40px;
+      padding-right: 40px;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .sla-container {
+      width: 100%;
+      max-height: 320px;
+      overflow: auto;
+    }
+    canvas#bar {
+      width: 100% !important;
+      height: 100% !important;
+      max-width: 100%;
+      max-height: 100%;
+      background:#0b1220;
+      border-radius:14px;
+      padding:12px;
+      box-sizing: border-box;
+      display: block;
+    }
+    a{color:#93c5fd}
+    /* Responsividade para os cards dos gráficos */
+    @media (max-width: 1100px) {
+      .row { flex-direction: column !important; flex-wrap: wrap !important; margin-left: 0; width: 100%; max-width: 100%; }
+      .card.chart-card, .card.sla-card { width: 100% !important; max-width: 100% !important; }
+      .bar-container { height: 340px; }
+    }
+    @media (max-width: 900px) {
+      .cards.kpi-row {
+        flex-direction: column;
+        gap: 12px;
+      }
+      .cards.kpi-row .card {
+        width: 100%;
+      }
+    }
+    @media (max-width: 700px) {
+      .cards { grid-template-columns: 1fr; }
+      .row { flex-direction: column !important; flex-wrap: wrap !important; margin-left: 0; width: 100%; max-width: 100%; }
+      .card.chart-card, .card.sla-card { width: 100% !important; max-width: 100% !important; }
+      .bar-container { height: 260px; padding-left: 10px; padding-right: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <h1 style="text-align: center;">GESTÃO À VISTA</h1>
+  <div class="grid cards kpi-row">
+    <div class="card"><div class="label">Total de Tickets</div><div class="value" id="kpi-total" style="font-size:56px;">–</div></div>
+    <div class="card"><div class="label">Tickets NOVOS</div><div class="value" id="kpi-new" style="font-size:56px;">–</div></div>
+    <div class="card"><div class="label">Tickets ABERTOS</div><div class="value" id="kpi-open" style="font-size:56px;">–</div></div>
+    <div class="card"><div class="label">Tickets PARADOS</div><div class="value" id="kpi-stopped" style="font-size:56px;">–</div></div>
+  </div>
+
+  <div class="row" style="margin-top:20px; flex-wrap:nowrap;">
+    <div class="card chart-card">
+      <div class="label">Tickets por Responsável</div>
+      <div class="bar-container" style="height:620px;">
+        <canvas id="bar"></canvas>
+      </div>
+    </div>
+    <div class="card sla-card">
+      <div class="label">Tickets sem Primeira Resposta</div>
+      <div class="sla-container">
+        <table id="sla-table" style="width:100%; border-collapse:collapse; color:#e2e8f0; font-size:20px;">
+          <thead>
+            <tr style="background:#1e293b;">
+              <th style="padding:6px 8px; text-align:left;">Nº</th>
+              <th style="padding:6px 8px; text-align:left;">Responsável</th>
+              <th style="padding:6px 8px; text-align:left;">SLA Limite</th>
+              <th style="padding:6px 8px; text-align:left;">Status</th>
+            </tr>
+          </thead>
+          <tbody id="sla-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div id="refresh-timer" style="position:fixed; right:24px; bottom:18px; color:#94a3b8; font-size:15px; background:#1e293b; border-radius:8px; padding:8px 18px; z-index:999;">
+    Atualizando em <span id="timer-count">60</span>s
+  </div>
+  <style>
+    .row {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      width: 100%;
+      max-width: 100%;
+      margin-left: 0;
+      flex-wrap: nowrap;
+    }
+    .card.chart-card, .card.sla-card {
+      width: 50%;
+      max-width: 50%;
+      min-width: 260px;
+    }
+    @media (max-width: 1100px) {
+      .row { flex-direction: column !important; flex-wrap: wrap !important; margin-left: 0; width: 100%; max-width: 100%; }
+      .card.chart-card, .card.sla-card { width: 100% !important; max-width: 100% !important; }
+      .bar-container { height: 340px; }
+    }
+    @media (max-width: 900px) {
+      .cards.kpi-row {
+        flex-direction: column;
+        gap: 12px;
+      }
+      .cards.kpi-row .card {
+        width: 100%;
+      }
+    }
+    @media (max-width: 700px) {
+      .cards { grid-template-columns: 1fr; }
+      .row { flex-direction: column !important; flex-wrap: wrap !important; margin-left: 0; width: 100%; max-width: 100%; }
+      .card.chart-card, .card.sla-card { width: 100% !important; max-width: 100% !important; }
+      .bar-container { height: 260px; padding-left: 10px; padding-right: 10px; }
+    }
+  </style>
+  <script>
+    // 1) COLE SEU TOKEN AQUI:
+    const MOVIDESK_TOKEN = "549cd25c-69d4-475d-8f1c-56c15ce75026";
+
+    // 2) Endpoint base
+    const BASE = "https://api.movidesk.com/public/v1/tickets";
+
+    // 3) Helper para contar resultados por baseStatus
+    async function countByBaseStatus(status) {
+      const url = new URL(BASE);
+      url.searchParams.set("token", MOVIDESK_TOKEN);
+      url.searchParams.set("$select", "id");
+      url.searchParams.set("$count", "true");
+
+      // Filtros combinados conforme seu exemplo
+      url.searchParams.set(
+        "$filter",
+        `(baseStatus eq '${status}') and (baseStatus ne 'Resolved') and (baseStatus ne 'Closed') and (baseStatus ne 'Canceled') and ((ownerTeam eq 'Atendimento e Suporte CSC TIC') or (ownerTeam eq 'Atendimento CAD CPQ') or (ownerTeam eq 'Atendimento do Encarregado de Dados'))`
+      );
+
+      const res = await fetch(url.toString());
+      if (!res.ok) throw new Error(`Erro API (${status}): ${res.status}`);
+
+      const headerCount = res.headers.get("X-Total-Count");
+      let total = headerCount ? parseInt(headerCount, 10) : null;
+
+      const data = await res.json();
+      if (total == null) {
+        if (typeof data['@odata.count'] === 'number') total = data['@odata.count'];
+        else if (Array.isArray(data)) total = data.length;
+        else total = 0;
+      }
+      return total;
+    }
+
+    // 4) Buscar tickets agrupados por owner
+    async function getTicketsByOwner() {
+      const url = new URL(BASE);
+      url.searchParams.set("token", MOVIDESK_TOKEN);
+      url.searchParams.set("$select", "id,owner");
+      url.searchParams.set("$expand", "owner($select=businessName)");
+      url.searchParams.set("$top", "500"); // Limite de 500 tickets por requisição
+      url.searchParams.set(
+        "$filter",
+        "(baseStatus ne 'Resolved') and (baseStatus ne 'Closed') and (baseStatus ne 'Canceled') and ((ownerTeam eq 'Atendimento e Suporte CSC TIC') or (ownerTeam eq 'Atendimento CAD CPQ') or (ownerTeam eq 'Atendimento do Encarregado de Dados'))"
+      );
+
+      let owners = {};
+      let skip = 0;
+      let hasMore = true;
+
+      while (hasMore) {
+        url.searchParams.set("$skip", skip);
+        const res = await fetch(url.toString());
+        if (!res.ok) throw new Error("Erro ao buscar tickets por owner: " + res.status);
+
+        const data = await res.json();
+        if (!Array.isArray(data) || data.length === 0) break;
+
+        data.forEach(ticket => {
+          const name = ticket.owner && ticket.owner.businessName ? ticket.owner.businessName : "Sem responsável";
+          owners[name] = (owners[name] || 0) + 1;
+        });
+
+        if (data.length < 500) hasMore = false;
+        else skip += 500;
+      }
+      return owners;
+    }
+
+    // 5) Carregar KPIs e gráficos
+    // Remova ou comente este bloco:
+    /*
+    (async () => {
+      try {
+        const [novo, aberto, parado, owners] = await Promise.all([
+          countByBaseStatus("New"),
+          countByBaseStatus("InAttendance"),
+          countByBaseStatus("Stopped"),
+          getTicketsByOwner()
+        ]);
+
+        // Atualiza cards
+        document.getElementById("kpi-new").textContent = novo.toLocaleString("pt-BR");
+        document.getElementById("kpi-open").textContent = aberto.toLocaleString("pt-BR");
+        document.getElementById("kpi-stopped").textContent = parado.toLocaleString("pt-BR");
+
+        // NÃO CRIE O GRÁFICO AQUI!
+      } catch (e) {
+        alert(e.message + "\nVerifique se o token está correto e se a API permite requisições diretas do navegador.");
+        console.error(e);
+      }
+    })();
+    */
+
+    // 6) Buscar tickets sem primeira resposta e SLA para vencer ou vencido
+    async function getTicketsSlaParaVencerOuVencido() {
+      const url = new URL(BASE);
+      url.searchParams.set("token", MOVIDESK_TOKEN);
+      url.searchParams.set("$select", "id,subject,owner,slaResponseDate,slaRealResponseDate,status");
+      url.searchParams.set("$expand", "owner($select=businessName)");
+      url.searchParams.set("$top", "500");
+      url.searchParams.set(
+        "$filter",
+        "(slaResponseDate ne null) and (slaRealResponseDate eq null) and (baseStatus ne 'Resolved') and (baseStatus ne 'Closed') and (baseStatus ne 'Canceled') and ((ownerTeam eq 'Atendimento e Suporte CSC TIC') or (ownerTeam eq 'Atendimento CAD CPQ') or (ownerTeam eq 'Atendimento do Encarregado de Dados'))"
+      );
+
+      let tickets = [];
+      let skip = 0;
+      let hasMore = true;
+
+      while (hasMore) {
+        url.searchParams.set("$skip", skip);
+        const res = await fetch(url.toString());
+        if (!res.ok) throw new Error("Erro ao buscar tickets de SLA: " + res.status);
+
+        const data = await res.json();
+        if (!Array.isArray(data) || data.length === 0) break;
+
+        tickets = tickets.concat(data);
+
+        if (data.length < 500) hasMore = false;
+        else skip += 500;
+      }
+
+      // Filtra para vencer (até 24h) ou vencido, ajustando para UTC-3
+      return tickets.filter(t => {
+        if (!t.slaResponseDate) return false;
+        const slaDate = new Date(t.slaResponseDate);
+        slaDate.setHours(slaDate.getHours() - 3); // Ajuste UTC-3
+        const now = new Date();
+        now.setHours(now.getHours() - 3); // Ajuste UTC-3
+        const diff = slaDate - now;
+        return diff <= 24 * 60 * 60 * 1000;
+      });
+    }
+
+    // 7) Carregar tabela de SLA
+    (async () => {
+      try {
+        const [novo, aberto, parado, owners, slaTickets] = await Promise.all([
+          countByBaseStatus("New"),
+          countByBaseStatus("InAttendance"),
+          countByBaseStatus("Stopped"),
+          getTicketsByOwner(),
+          getTicketsSlaParaVencerOuVencido()
+        ]);
+
+        // Preenche tabela de tickets de SLA
+        const tbody = document.getElementById("sla-tbody");
+        if (slaTickets.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="5" style="padding:8px; color:#94a3b8;">Nenhum ticket encontrado.</td></tr>`;
+        } else {
+          tbody.innerHTML = slaTickets.map(t => {
+            const slaDate = t.slaResponseDate ? new Date(t.slaResponseDate) : null;
+            const now = new Date();
+            let status = "";
+            if (slaDate) {
+              if (slaDate < now) status = "VENCIDO";
+              else status = "Para vencer";
+            }
+            // Ajuste UTC-3
+            let slaDateStr = "";
+            if (slaDate) {
+              // Subtrai 3 horas (UTC-3)
+              slaDate.setHours(slaDate.getHours() - 3);
+              slaDateStr = slaDate.toLocaleString("pt-BR");
+            }
+            return `<tr>
+              <td style="padding:8px 8px;">${t.id}</td>
+              <td style="padding:8px 8px;">${t.owner && t.owner.businessName ? t.owner.businessName : "Sem responsável"}</td>
+              <td style="padding:8px 8px;">${slaDateStr}</td>
+              <td style="padding:8px 8px; color:${status === "VENCIDO" ? "#f87171" : "#fbbf24"}; font-weight:600;">${status}</td>
+            </tr>`;
+          }).join("");
+        }
+
+      } catch (e) {
+        alert(e.message + "\nVerifique se o token está correto e se a API permite requisições diretas do navegador.");
+        console.error(e);
+      }
+    })();
+
+    // Função para contar o total de tickets (sem filtrar por status)
+    async function countTotalTickets() {
+      const url = new URL(BASE);
+      url.searchParams.set("token", MOVIDESK_TOKEN);
+      url.searchParams.set("$select", "id");
+      url.searchParams.set("$count", "true");
+      url.searchParams.set(
+        "$filter",
+        "(baseStatus ne 'Resolved') and (baseStatus ne 'Closed') and (baseStatus ne 'Canceled') and ((ownerTeam eq 'Atendimento e Suporte CSC TIC') or (ownerTeam eq 'Atendimento CAD CPQ') or (ownerTeam eq 'Atendimento do Encarregado de Dados'))"
+      );
+
+      const res = await fetch(url.toString());
+      if (!res.ok) throw new Error(`Erro API (total): ${res.status}`);
+
+      const headerCount = res.headers.get("X-Total-Count");
+      let total = headerCount ? parseInt(headerCount, 10) : null;
+
+      const data = await res.json();
+      if (total == null) {
+        if (typeof data['@odata.count'] === 'number') total = data['@odata.count'];
+        else if (Array.isArray(data)) total = data.length;
+        else total = 0;
+      }
+      return total;
+    }
+
+    // Função para atualizar todos os dados da dashboard
+    async function atualizarDashboard() {
+      try {
+        const [total, novo, aberto, parado, owners] = await Promise.all([
+          countTotalTickets(),
+          countByBaseStatus("New"),
+          countByBaseStatus("InAttendance"),
+          countByBaseStatus("Stopped"),
+          getTicketsByOwner()
+        ]);
+
+        // Atualiza cards
+        document.getElementById("kpi-total").textContent = total.toLocaleString("pt-BR");
+        document.getElementById("kpi-new").textContent = novo.toLocaleString("pt-BR");
+        document.getElementById("kpi-open").textContent = aberto.toLocaleString("pt-BR");
+        document.getElementById("kpi-stopped").textContent = parado.toLocaleString("pt-BR");
+
+        // Gráfico de barras por owner
+        const ctxBar = document.getElementById("bar");
+        const ownersArray = Object.entries(owners).sort((a, b) => b[1] - a[1]);
+        function formatOwnerName(name) {
+          if (!name) return "";
+          const parts = name.trim().split(/\s+/);
+          if (parts.length === 1) return parts[0];
+          return `${parts[0]} ${parts[parts.length - 1]}`;
+        }
+        const ownerNames = ownersArray.map(([name]) => formatOwnerName(name));
+        const ownerCounts = ownersArray.map(([, count]) => count);
+
+        function getColor(idx, total) {
+          const hue = Math.round((idx / total) * 360);
+          return `hsla(${hue}, 70%, 60%, 0.2)`;
+        }
+        const barColors = ownerNames.map((_, i) => getColor(i, ownerNames.length));
+        const maxCount = Math.max(...ownerCounts);
+        const suggestedMax = maxCount > 0 ? Math.ceil(maxCount * 1.15) : 5;
+
+        // Destroi gráfico anterior se existir
+        if (window.barChartInstance) window.barChartInstance.destroy();
+
+        window.barChartInstance = new Chart(ctxBar, {
+          type: "bar",
+          data: {
+            labels: ownerNames,
+            datasets: [{
+              label: "Tickets",
+              data: ownerCounts,
+              backgroundColor: barColors,
+              borderColor: barColors.map(c => c.replace('0.2', '1')),
+              borderWidth: 2
+            }]
+          },
+          options: {
+            indexAxis: 'y',
+            aspectRatio: 2.2,
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+              legend: { display: false },
+              tooltip: { callbacks: { label: ctx => `${ctx.parsed.x} tickets` } },
+              datalabels: {
+                anchor: 'end',
+                align: 'end',
+                color: '#fff',
+                font: { weight: 'bold', size: 14 },
+                formatter: value => value,
+                clamp: true,
+                offset: 2
+              }
+            },
+            scales: {
+              x: {
+                beginAtZero: true,
+                suggestedMax: suggestedMax,
+                ticks: { color: "#e2e8f0" },
+                grid: { color: "#1e293b" }
+              },
+              y: {
+                categoryPercentage: 0.1, // Diminua para aumentar o espaço (ex: 0.5)
+                barPercentage: 0.1,      // Diminua para aumentar o espaço (ex: 0.5)
+                ticks: {color: "#e2e8f0",
+                        autoSkip: false,
+                        maxRotation: 45,
+                        minRotation: 0,
+                        font: {size: 20}
+                      },
+                grid: { color: "#1e293b" },
+                offset: true
+              }
+            }
+          },
+          plugins: [ChartDataLabels]
+        });
+
+        // Atualiza tabela SLA
+        const slaTickets = await getTicketsSlaParaVencerOuVencido();
+        const tbody = document.getElementById("sla-tbody");
+        // Função para exibir apenas o primeiro e último nome do responsável
+        function formatOwnerName(name) {
+          if (!name) return "";
+          const parts = name.trim().split(/\s+/);
+          if (parts.length === 1) return parts[0];
+          return `${parts[0]} ${parts[parts.length - 1]}`;
+        }
+        if (slaTickets.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="5" style="padding:8px; color:#94a3b8;">Nenhum ticket encontrado.</td></tr>`;
+        } else {
+          tbody.innerHTML = slaTickets.map(t => {
+            let slaDate = t.slaResponseDate ? new Date(t.slaResponseDate) : null;
+            let status = "";
+            let slaDateStr = "";
+            if (slaDate) {
+              slaDate.setHours(slaDate.getHours() - 3); // Ajuste UTC-3
+              slaDateStr = slaDate.toLocaleString("pt-BR");
+              const now = new Date();
+              if (slaDate < now) status = "VENCIDO";
+              else status = "Para vencer";
+              console.log(slaDate, now, slaDate < now);
+            }
+            // Aplica formatação ao nome do responsável
+            const ownerName = t.owner && t.owner.businessName ? formatOwnerName(t.owner.businessName) : "Sem responsável";
+            return `<tr>
+              <td style="padding:6px 8px;">${t.id}</td>
+              <td style="padding:6px 8px;">${ownerName}</td>
+              <td style="padding:6px 8px;">${slaDateStr}</td>
+              <td style="padding:6px 8px; color:${status === "VENCIDO" ? "#f87171" : "#fbbf24"}; font-weight:600;">${status}</td>
+            </tr>`;
+          }).join("");
+        }
+
+      } catch (e) {
+        alert(e.message + "\nVerifique se o token está correto e se a API permite requisições diretas do navegador.");
+        console.error(e);
+      }
+    }
+
+    let timer = 60;
+    let timerInterval = null;
+
+    function startRefreshTimer() {
+      const timerSpan = document.getElementById("timer-count");
+      if (timerInterval) clearInterval(timerInterval);
+      timerSpan.textContent = timer;
+      timerInterval = setInterval(() => {
+        timer--;
+        if (timer <= 0) {
+          atualizarDashboard();
+          timer = 60;
+        }
+        timerSpan.textContent = timer;
+      }, 1000);
+    }
+
+    // Inicialização
+    atualizarDashboard();
+    startRefreshTimer();
+  </script>
+</body>
+</html>

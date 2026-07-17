@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}Solicitações do Colaborador — Sistema de Aprovação{% endblock %}
+
+{% block content %}
+<div class="page-header" data-aos="fade-up">
+    <h2>Solicitações do Colaborador</h2>
+    <p>Gerencie os status das solicitações</p>
+</div>
+
+<div class="table-wrapper" data-aos="fade-up" data-aos-delay="50">
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Tipo</th>
+                    <th>Data</th>
+                    <th>Horas</th>
+                    <th>Justificativa</th>
+                    <th>Arquivos</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for solicitacao in solicitacoes %}
+                <tr>
+                    <td>{{ solicitacao['tipo'] }}</td>
+                    <td>{{ solicitacao['dia_acontecimento'] }}</td>
+                    <td>{{ solicitacao['horas'] }}</td>
+                    <td style="max-width: 300px;">{{ solicitacao['justificativa'] }}</td>
+                    <td>
+                        {% if solicitacao['download_url'] %}
+                            <a href="{{ solicitacao['download_url'] }}" download="{{ solicitacao['download_name'] }}" class="btn btn-sm btn-secondary" {% if not solicitacao['is_zip'] %}target="_blank"{% endif %}>
+                                <i class="ri-download-2-line"></i> Baixar
+                            </a>
+                        {% else %}
+                            <span class="text-muted text-small">Sem anexo</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <select class="status-select" onchange="atualizarStatus(this, '{{ solicitacao['id'] }}')">
+                            <option value="pendente" {% if solicitacao['status'] == 'pendente' %}selected{% endif %}>Pendente</option>
+                            <option value="Aprovado" {% if solicitacao['status'] == 'aprovado' %}selected{% endif %}>Aprovado</option>
+                            <option value="Rejeitado" {% if solicitacao['status'] == 'rejeitado' %}selected{% endif %}>Rejeitado</option>
+                        </select>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function atualizarStatus(selectElement, solicitacaoId) {
+        const status = selectElement.value;
+        confirmarAcao('Alterar status', 'Tem certeza que deseja alterar o status desta solicitação?', function() {
+            fetch('{{ url_for("solicitacoes.atualizar_status") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: status, solicitacao_id: solicitacaoId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // visual feedback
+                } else {
+                    alert('Erro ao atualizar status.');
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao atualizar status.');
+            });
+        });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sistema de Aprovação{% endblock %}</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <!-- Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+
+    <!-- AOS -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+
+        <!-- ===== NAVBAR ===== -->
+        <nav class="navbar">
+            <div class="container">
+                <a href="{{ url_for('principal.inicio') }}" class="navbar-brand">
+                    <i class="ri-shield-check-line"></i>
+                    Sistema de Aprovação
+                </a>
+
+                <div class="navbar-nav" id="navMenu">
+                    <button class="navbar-close" id="navClose">
+                        <i class="ri-close-line"></i>
+                    </button>
+
+                    {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('solicitacoes.listar_solicitacoes') }}">
+                            <i class="ri-file-list-3-line"></i> Solicitações
+                        </a>
+                        {% if current_user.perfil == 'admin' %}
+                            <a href="{{ url_for('painel.painel_admin') }}">
+                                <i class="ri-dashboard-line"></i> Colaboradores
+                            </a>
+                        {% endif %}
+
+                        <a href="{{ url_for('perfil.perfil') }}">
+                            <i class="ri-user-line"></i> Perfil
+                        </a>
+                        <a href="{{ url_for('autenticacao.logout') }}">
+                            <i class="ri-logout-box-r-line"></i> Sair
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('autenticacao.login') }}">
+                            <i class="ri-login-box-line"></i> Entrar
+                        </a>
+                        <a href="{{ url_for('aniversariantes.listar_aniversariantes') }}">
+                            <i class="ri-cake-2-line"></i> Aniversariantes
+                        </a>
+                    {% endif %}
+                </div>
+
+                <button class="navbar-toggle" id="navToggle">
+                    <i class="ri-menu-line"></i>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Overlay (mobile) -->
+        <div class="nav-overlay" id="navOverlay"></div>
+
+        <!-- ===== MAIN ===== -->
+        <main class="page-content">
+            <div class="container">
+                <!-- Flash messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="flash-messages">
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }}">{{ message }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+
+        <!-- ===== FOOTER ===== -->
+        <footer class="footer">
+            Sistema de Aprovação &mdash; TI CAD
+        </footer>
+
+        <!-- Confirmation Modal -->
+        <div class="confirm-overlay" id="confirmOverlay">
+            <div class="confirm-dialog">
+                <h3 id="confirmTitle">Confirmação</h3>
+                <p id="confirmMessage">Tem certeza que deseja continuar?</p>
+                <div class="confirm-actions">
+                    <button class="btn btn-secondary" onclick="fecharConfirmacao()">Cancelar</button>
+                    <button class="btn btn-primary" id="confirmOk">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        // Mobile nav
+        const navMenu = document.getElementById('navMenu');
+        const navToggle = document.getElementById('navToggle');
+        const navClose = document.getElementById('navClose');
+        const navOverlay = document.getElementById('navOverlay');
+
+        if (navToggle) {
+            navToggle.addEventListener('click', () => {
+                navMenu.classList.add('open');
+                navOverlay.classList.add('active');
+            });
+        }
+
+        function closeNav() {
+            navMenu.classList.remove('open');
+            navOverlay.classList.remove('active');
+        }
+
+        if (navClose) navClose.addEventListener('click', closeNav);
+        if (navOverlay) navOverlay.addEventListener('click', closeNav);
+
+        // AOS
+        AOS.init({ once: true, duration: 600 });
+
+        // Confirmation modal
+        function confirmarAcao(titulo, mensagem, callback) {
+            document.getElementById('confirmTitle').textContent = titulo;
+            document.getElementById('confirmMessage').textContent = mensagem;
+            document.getElementById('confirmOverlay').classList.add('active');
+            document.getElementById('confirmOk').onclick = function() {
+                fecharConfirmacao();
+                callback();
+            };
+        }
+
+        function fecharConfirmacao() {
+            document.getElementById('confirmOverlay').classList.remove('active');
+        }
+
+        // Close on overlay click
+        document.getElementById('confirmOverlay').addEventListener('click', function(e) {
+            if (e.target === this) fecharConfirmacao();
+        });
+    </script>
+    <script src="{{ url_for('static', filename='js/script.js') }}" defer></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

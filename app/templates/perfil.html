@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}Perfil — Sistema de Aprovação{% endblock %}
+
+{% block content %}
+<div class="page-header" data-aos="fade-up">
+    <h2>Meu Perfil</h2>
+</div>
+
+<form method="post" action="{{ url_for('perfil.perfil') }}" enctype="multipart/form-data" id="formPerfil">
+    <div class="profile-card" data-aos="fade-up" data-aos-delay="50">
+        <!-- Header com avatar -->
+        <div class="profile-header">
+            <div class="profile-avatar-wrapper" onclick="document.getElementById('foto_perfil').click();">
+                <img src="{{ url_for('static', filename='img/' + (perfil['img_url'] or 'default.png')) }}"
+                    alt="Foto do usuário" class="profile-avatar" id="avatarPreview">
+                <span class="profile-avatar-overlay"><i class="ri-camera-line"></i> Alterar foto</span>
+            </div>
+            <input type="file" id="foto_perfil" name="foto_perfil" accept="image/*" style="display:none;"
+                onchange="previewAvatar(this)">
+            <h2>{{ perfil['nome'] }} {{ perfil['sobrenome'] }}</h2>
+        </div>
+
+        <!-- Body com dados -->
+        <div class="profile-body">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="chapa" class="form-label">Chapa</label>
+                    <input id="chapa" type="text" class="form-control" value="{{ perfil['chapa'] }}" readonly disabled>
+                </div>
+                <div class="form-group">
+                    <label for="nome" class="form-label">Nome completo</label>
+                    <input id="nome" type="text" class="form-control"
+                        value="{{ perfil['nome'] }} {{ perfil['sobrenome'] }}" readonly disabled>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="perfil_tipo" class="form-label">Perfil</label>
+                    <input id="perfil_tipo" type="text" class="form-control" value="{{ perfil['perfil'] }}" readonly disabled>
+                </div>
+                <div class="form-group">
+                    <label for="data_nascimento" class="form-label">Aniversário</label>
+                    <input id="data_nascimento" type="date" class="form-control"
+                        value="{{ perfil['data_nascimento'] }}" readonly disabled>
+                </div>
+            </div>
+            <!--
+            <hr style="border: none; border-top: 1px solid var(--gray-200); margin: 1.5rem 0;">
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="presente1" class="form-label">Presente 1</label>
+                    <input id="presente1" type="text" class="form-control" name="presente1"
+                        placeholder="Escolha seu presente" value="{{ perfil['presente1'] }}">
+                </div>
+                <div class="form-group">
+                    <label for="presente2" class="form-label">Presente 2</label>
+                    <input id="presente2" type="text" class="form-control" name="presente2"
+                        placeholder="Escolha seu presente" value="{{ perfil['presente2'] }}">
+                </div>
+            </div>
+            -->
+            <div style="margin-top: 1rem;">
+                <button type="button" class="btn btn-primary" onclick="confirmarAcao('Salvar perfil', 'Tem certeza que deseja salvar as alterações?', function(){ document.getElementById('formPerfil').submit(); })">
+                    <i class="ri-save-line"></i> Salvar
+                </button>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function previewAvatar(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('avatarPreview').src = e.target.result;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
+{% endblock %}

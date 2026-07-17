@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+{% block title %}Solicitações — Sistema de Aprovação{% endblock %}
+
+{% block content %}
+<div class="page-header" data-aos="fade-up">
+    <h2>Minhas Solicitações</h2>
+    <p>Acompanhe e gerencie suas solicitações de ponto</p>
+</div>
+
+<!-- Saldo -->
+<div class="saldo-grid" data-aos="fade-up" data-aos-delay="50">
+    <div class="saldo-card saldo-aprovado">
+        <div class="saldo-icon">
+            <i class="ri-time-line"></i>
+        </div>
+        <div>
+            <div class="saldo-value">{{ saldo['qtd'] }}</div>
+            <div class="saldo-label">Saldo de horas (apenas aprovadas)</div>
+        </div>
+    </div>
+    <div class="saldo-card saldo-pendente">
+        <div class="saldo-icon">
+            <i class="ri-history-line"></i>
+        </div>
+        <div>
+            <div class="saldo-value">{{ saldo_pendente['qtd'] }}</div>
+            <div class="saldo-label">Projeção do saldo (aprovadas + pendentes)</div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabela -->
+<div class="table-wrapper" data-aos="fade-up" data-aos-delay="100">
+    <div class="table-header">
+        <h2>Solicitações</h2>
+        <a href="{{ url_for('solicitacoes.nova_solicitacao') }}" class="btn btn-primary btn-sm">
+            <i class="ri-add-line"></i> Nova Solicitação
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Tipo</th>
+                    <th>Data</th>
+                    <th>Horas</th>
+                    <th>Status</th>
+                    <th>Anexos</th>
+                    <th>Lançado</th>
+                    <th class="acao">Editar</th>
+                    <th class="acao">Excluir</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for solicitacao in solicitacoes %}
+                <tr>
+                    <td>{{ solicitacao['tipo'] }}</td>
+                    <td>{{ solicitacao['dia_acontecimento_fmt'] }}</td>
+                    <td>{{ solicitacao['horas'] }}</td>
+                    <td>
+                        {% if solicitacao['status'] == 'pendente' %}
+                            <span class="badge badge-pending">Pendente</span>
+                        {% elif solicitacao['status'] == 'Aprovado' %}
+                            <span class="badge badge-approved">Aprovado</span>
+                        {% elif solicitacao['status'] == 'Rejeitado' %}
+                            <span class="badge badge-rejected">Rejeitado</span>
+                        {% else %}
+                            <span class="badge badge-neutral">{{ solicitacao['status'] }}</span>
+                        {% endif %}
+                    </td>
+
+                    <!-- Anexos -->
+                    <td>
+                        {% set arquivos = solicitacao['links_evidencias'].split(',') if solicitacao['links_evidencias'] else [] %}
+                        {% set arquivos_limpos = [] %}
+                        {% for a in arquivos %}{% if a.strip() %}{% if arquivos_limpos.append(a.strip()) %}{% endif %}{% endif %}{% endfor %}
+                        {% if arquivos_limpos %}
+                            <div class="anexos-preview">
+                                {% for arquivo in arquivos_limpos %}
+                                    {% set ext = arquivo.rsplit('.', 1)[-1].lower() %}
+                                    {% if ext in ['png', 'jpg', 'jpeg', 'gif', 'webp'] %}
+                                        <img src="{{ url_for('static', filename='arquivos/' + arquivo) }}"
+                                             alt="anexo" class="anexo-thumb"
+                                             onclick="abrirLightbox(this.src)">
+                                    {% else %}
+                                        <a href="{{ url_for('static', filename='arquivos/' + arquivo) }}" target="_blank" class="anexo-file" title="{{ arquivo }}">
+                                            <i class="ri-file-line"></i>
+                                        </a>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <span class="text-muted text-small">—</span>
+                        {% endif %}
+                    </td>
+
+                    <td>{{ solicitacao['created_at_fmt'] }}</td>
+
+                    {% if solicitacao['status'] == 'pendente' %}
+                        <td class="acao">
+                            <a href="{{ url_for('solicitacoes.nova_solicitacao', solicitacao_id=solicitacao['id']) }}" title="Editar">
+                                <i class="bx bx-edit"></i>
+                            </a>
+                        </td>
+                        <td class="acao">
+                            <a href="#" title="Excluir" onclick="event.preventDefault(); confirmarAcao('Excluir solicitação', 'Tem certeza que deseja excluir esta solicitação?', function(){ window.location.href='{{ url_for('solicitacoes.excluir_solicitacao', solicitacao_id=solicitacao['id']) }}'; })">
+                                <i class="bx bx-trash"></i>
+                            </a>
+                        </td>
+                    {% else %}
+                        <td class="acao"><i class="bx bx-edit disabled-icon"></i></td>
+                        <td class="acao"><i class="bx bx-trash disabled-icon"></i></td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox-overlay" id="lightboxOverlay" onclick="fecharLightbox()">
+    <button class="lightbox-close" onclick="fecharLightbox()"><i class="ri-close-line"></i></button>
+    <img id="lightboxImg" src="" alt="preview" onclick="event.stopPropagation()">
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+    .anexos-preview {
+        display: flex;
+        gap: .375rem;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .anexo-thumb {
+        width: 40px;
+        height: 40px;
+        object-fit: cover;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--gray-200);
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .anexo-thumb:hover {
+        transform: scale(1.1);
+        box-shadow: var(--shadow);
+    }
+
+    .anexo-file {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: var(--radius-sm);
+        background: var(--gray-100);
+        color: var(--text-secondary);
+        font-size: 1.25rem;
+        transition: var(--transition);
+    }
+
+    .anexo-file:hover {
+        background: var(--primary-bg);
+        color: var(--primary);
+    }
+
+    .lightbox-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,.85);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        cursor: pointer;
+    }
+
+    .lightbox-overlay.active { display: flex; }
+
+    .lightbox-overlay img {
+        max-width: 90vw;
+        max-height: 90vh;
+        border-radius: var(--radius);
+        box-shadow: 0 8px 32px rgba(0,0,0,.4);
+        cursor: default;
+    }
+
+    .lightbox-close {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        font-size: 2rem;
+        color: #fff;
+        cursor: pointer;
+        z-index: 10000;
+        background: rgba(0,0,0,.5);
+        border: none;
+        border-radius: 50%;
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background .2s;
+    }
+
+    .lightbox-close:hover { background: rgba(255,255,255,.2); }
+</style>
+
+<script>
+    function abrirLightbox(src) {
+        document.getElementById('lightboxImg').src = src;
+        document.getElementById('lightboxOverlay').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function fecharLightbox() {
+        document.getElementById('lightboxOverlay').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') fecharLightbox();
+    });
+</script>
+{% endblock %}
