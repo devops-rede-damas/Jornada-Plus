@@ -70,7 +70,9 @@ def painel_admin():
     if current_user.id == 3:
         filtro = "id <> 3"
     elif current_user.id == 4:
-        filtro = "id NOT IN (2, 3, 10)"
+        filtro = "id NOT IN (2, 3, 10, 37)"
+    elif current_user.id == 2:
+        filtro = "id IN (2, 10, 37)"
     elif current_user.id == 34:
         filtro = "1 = 1"
     else:
