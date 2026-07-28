@@ -180,7 +180,7 @@
 
     /* Aviso com as regras */
     .massagem-aviso {
-        margin-top: 2.5rem;
+        margin-bottom: 2rem;
         background: #eff6ff;
         border: 1px solid #bfdbfe;
         border-left: 4px solid #3b82f6;
@@ -210,7 +210,16 @@
 
 <div class="massagem-header" data-aos="fade-up">
     <h2>Fila de Massagem</h2>
-    <p>Próximo da vez em destaque e a fila logo abaixo.</p>
+</div>
+
+<div class="massagem-aviso" data-aos="fade-up">
+    <h3><i class="ri-information-line"></i> Como funciona a fila</h3>
+    <ul>
+        <li>A fila é <strong>rotativa</strong>: quem conclui a massagem vai para o fim da fila.</li>
+        <li>O <strong>próximo da vez</strong> fica em destaque no topo, em verde.</li>
+        <li>Usuários <strong>inativos</strong> não aparecem na fila.</li>
+        <li><span class="destaque-ferias">Férias:</span> ao marcar alguém de férias, a linha fica <strong>amarela</strong> e a pessoa é <strong>pulada</strong> na vez, mas <strong>não perde a posição</strong>. Quando voltar, retoma exatamente o lugar em que estava.</li>
+    </ul>
 </div>
 
 {% if proximo %}
@@ -270,14 +279,4 @@
 {% else %}
     <div class="massagem-vazio">A fila de massagem está vazia.</div>
 {% endif %}
-
-<div class="massagem-aviso" data-aos="fade-up">
-    <h3><i class="ri-information-line"></i> Como funciona a fila</h3>
-    <ul>
-        <li>A fila é <strong>rotativa</strong>: quem conclui a massagem vai para o fim da fila.</li>
-        <li>O <strong>próximo da vez</strong> fica em destaque no topo, em verde.</li>
-        <li>Usuários <strong>inativos</strong> não aparecem na fila.</li>
-        <li><span class="destaque-ferias">Férias:</span> ao marcar alguém de férias, a linha fica <strong>amarela</strong> e a pessoa é <strong>pulada</strong> na vez, mas <strong>não perde a posição</strong>. Quando voltar, retoma exatamente o lugar em que estava.</li>
-    </ul>
-</div>
 {% endblock %}
