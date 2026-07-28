@@ -1,0 +1,11 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+.git/
+.gitignore
+*.bak
+templates/_backup/
+app/static/img/backup/
+app/static/arquivos/

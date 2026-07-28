@@ -72,6 +72,29 @@ http://localhost:5001
 
 ---
 
+## Executando com Docker
+
+O projeto inclui `Dockerfile` e `docker-compose.yml` para rodar em container
+(Gunicorn na porta 5001). O banco de dados **não** sobe junto: o container
+conecta ao MySQL definido no `.env` (ex.: um servidor MySQL existente).
+
+```bash
+# Sobe (ou reconstrói) o container em segundo plano
+docker compose up -d --build
+
+# Acompanha os logs
+docker compose logs -f web
+
+# Derruba o container
+docker compose down
+```
+
+> **Importante:** o código é copiado durante o build. Após alterar arquivos
+> Python ou templates, rode `docker compose up -d --build` novamente para que
+> as mudanças tenham efeito. Apenas `app/static/arquivos` é montado como volume.
+
+---
+
 ## Estrutura do projeto
 
 ```
@@ -95,6 +118,7 @@ http://localhost:5001
 │   │   ├── solicitacoes.py  # CRUD de solicitações
 │   │   ├── painel.py        # Dashboard do administrador
 │   │   ├── perfil.py        # Perfil do usuário
+│   │   ├── massagem.py      # Fila de massagem (rotativa + férias)
 │   │   └── aniversariantes.py
 │   │
 │   ├── templates/           # HTMLs (Jinja2)
@@ -102,6 +126,16 @@ http://localhost:5001
 │       ├── css/
 │       ├── js/
 │       └── img/
+│
+├── migrations/              # Scripts SQL de evolução do banco
+│   ├── 001_coord_func.sql
+│   ├── 002_users_nivel.sql
+│   ├── 003_fila_massagem.sql       # Tabela da fila de massagem
+│   └── 004_fila_massagem_ferias.sql # Coluna de férias na fila
+│
+├── Dockerfile               # Imagem da aplicação (Gunicorn)
+├── docker-compose.yml       # Orquestração do container web
+└── .dockerignore
 ```
 
 ---
@@ -119,8 +153,24 @@ http://localhost:5001
 | `/perfil`                | Perfil do usuário      | Logado          |
 | `/painel`                | Dashboard admin        | Admin           |
 | `/tabela_solicitacoes/<id>` | Solicitações de um colaborador | Admin |
+| `/massagem`              | Fila de massagem       | Logado (exceto IDs 2 e 4) |
 | `/aniversariantes`       | Aniversariantes do mês | Público         |
 | `/movidesk`              | Gestão à Vista (Movidesk) | Público      |
+
+---
+
+## Fila de Massagem
+
+Fila rotativa e persistente para organizar a ordem das massagens:
+
+- O **próximo da vez** aparece em destaque no topo (verde). Ao concluir, a
+  pessoa vai para o **fim da fila**.
+- Usuários **inativos** não aparecem na fila.
+- **Férias:** qualquer pessoa que vê a página pode marcar/desmarcar alguém de
+  férias. A linha fica **amarela**, a pessoa é **pulada** na vez (a numeração
+  não conta ela) mas **não perde a posição** — ao voltar, retoma exatamente o
+  lugar em que estava.
+- Um bloco de aviso no rodapé da página resume essas regras.
 
 ---
 
@@ -130,3 +180,4 @@ http://localhost:5001
 - **Frontend:** Bootstrap 5, Chart.js, AOS, GSAP
 - **Banco:** MySQL com PyMySQL
 - **Auth:** Werkzeug (hash de senhas), itsdangerous (tokens)
+- **Deploy:** Docker + Gunicorn
