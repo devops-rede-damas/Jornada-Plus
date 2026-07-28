@@ -33,7 +33,7 @@ def login():
             login_user(usuario)
             flash('Login efetuado com sucesso!', 'success')
 
-            if usuario.perfil == 'admin':
+            if usuario.nivel in (1, 2):
                 return redirect(url_for('painel.painel_admin'))
             return redirect(url_for('solicitacoes.listar_solicitacoes'))
         else:

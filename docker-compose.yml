@@ -1,0 +1,18 @@
+services:
+  web:
+    build: .
+    container_name: form_horas_web
+    restart: unless-stopped
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./app/static/arquivos:/app/app/static/arquivos
+    # Usa as credenciais reais definidas no arquivo .env
+    # (inclusive MYSQL_HOST=192.168.90.124, o banco de produção).
+    env_file:
+      - .env
+    environment:
+      FLASK_PORTA: 5001
+    # Garante acesso a hosts da rede local a partir do container.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

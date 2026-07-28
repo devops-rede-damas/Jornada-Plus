@@ -28,14 +28,14 @@ QUERY_COLABORADORES = """
                         SUM(
                             CASE
                                 WHEN LOWER(tipo) = 'horas extra'
-                                    THEN TIME_TO_SEC(STR_TO_DATE(horas, '%H:%i'))
+                                    THEN TIME_TO_SEC(STR_TO_DATE(horas, '%%H:%%i'))
                                 WHEN LOWER(tipo) IN ('saida antecipada', 'compensacao', 'saldo devedor')
-                                    THEN -TIME_TO_SEC(STR_TO_DATE(horas, '%H:%i'))
+                                    THEN -TIME_TO_SEC(STR_TO_DATE(horas, '%%H:%%i'))
                                 ELSE 0
                             END
                         )
                     ),
-                    '%H:%i'
+                    '%%H:%%i'
                 ),
                 '00:00'
             )
@@ -45,7 +45,7 @@ QUERY_COLABORADORES = """
         ) AS qtd,
         presente1,
         presente2,
-        DATE_FORMAT(data_nascimento, '%d/%m') AS data_nascimento,
+        DATE_FORMAT(data_nascimento, '%%d/%%m') AS data_nascimento,
         (
             SELECT EXISTS(
                 SELECT 1
@@ -66,25 +66,26 @@ QUERY_COLABORADORES = """
 @admin_obrigatorio
 def painel_admin():
     """Dashboard com lista de colaboradores, saldos e gráfico."""
-    # Define o filtro de acordo com o administrador logado
-    if current_user.id == 3:
-        filtro = "id <> 3"
-    elif current_user.id == 4:
-        filtro = "id NOT IN (2, 3, 10, 37)"
-    elif current_user.id == 2:
-        filtro = "id IN (2, 10, 37)"
-    elif current_user.id == 34:
+    # Administrador (nível 1) vê todos os ativos; coordenador (nível 2) vê apenas
+    # os funcionários vinculados a ele na tabela coord_func.
+    if current_user.nivel == 1:
         filtro = "1 = 1"
+        parametros = ()
     else:
-        filtro = "id IN (1, 10)"
-        
+        filtro = (
+            "id IN ("
+            "SELECT id_func FROM coord_func "
+            "WHERE id_coord = %s AND status = 1"
+            ")"
+        )
+        parametros = (current_user.id,)
 
     query = QUERY_COLABORADORES.format(filtro=filtro)
 
     conexao = obter_conexao()
     try:
         with conexao.cursor() as cursor:
-            cursor.execute(query)
+            cursor.execute(query, parametros)
             colaboradores = cursor.fetchall()
     finally:
         conexao.close()

@@ -54,6 +54,7 @@ def criar_app():
     from app.rotas.painel import painel
     from app.rotas.perfil import perfil_bp
     from app.rotas.aniversariantes import aniversariantes
+    from app.rotas.massagem import massagem
 
     app.register_blueprint(principal)
     app.register_blueprint(autenticacao)
@@ -61,5 +62,6 @@ def criar_app():
     app.register_blueprint(painel)
     app.register_blueprint(perfil_bp)
     app.register_blueprint(aniversariantes)
+    app.register_blueprint(massagem)
 
     return app

@@ -9,14 +9,14 @@ class Usuario(UserMixin):
     """Representa um usuário do sistema."""
 
     def __init__(self, id, chapa, nome, sobrenome, email, senha_hash,
-                 perfil, data_nascimento, presente1, presente2, img_url):
+                 nivel, data_nascimento, presente1, presente2, img_url):
         self.id = id
         self.chapa = chapa
         self.nome = nome
         self.sobrenome = sobrenome
         self.email = email
         self.senha_hash = senha_hash
-        self.perfil = perfil
+        self.nivel = nivel
         self.data_nascimento = data_nascimento
         self.presente1 = presente1
         self.presente2 = presente2
@@ -38,7 +38,7 @@ class Usuario(UserMixin):
             sobrenome=dados['sobrenome'],
             email=dados['email'],
             senha_hash=dados['senha_hash'],
-            perfil=dados['perfil'],
+            nivel=dados['nivel'],
             data_nascimento=dados['data_nascimento'],
             presente1=dados['presente1'],
             presente2=dados['presente2'],

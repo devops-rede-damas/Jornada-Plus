@@ -76,7 +76,13 @@ def perfil():
     conexao = obter_conexao()
     try:
         with conexao.cursor() as cursor:
-            cursor.execute("SELECT * FROM users WHERE id = %s", (current_user.id,))
+            cursor.execute(
+                "SELECT u.*, n.nivel AS nivel_nome "
+                "FROM users u "
+                "LEFT JOIN nivel n ON n.id = u.nivel "
+                "WHERE u.id = %s",
+                (current_user.id,)
+            )
             dados_perfil = cursor.fetchone()
     finally:
         conexao.close()
