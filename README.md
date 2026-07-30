@@ -170,6 +170,9 @@ Fila rotativa e persistente para organizar a ordem das massagens:
   férias. A linha fica **amarela**, a pessoa é **pulada** na vez (a numeração
   não conta ela) mas **não perde a posição** — ao voltar, retoma exatamente o
   lugar em que estava.
+- **Acesso:** os usuários de **IDs 2 e 4** não veem o link no menu e, caso
+  tentem acessar a rota diretamente pela URL, são barrados e **devolvidos à
+  última página** em que estavam.
 - Um bloco de aviso no rodapé da página resume essas regras.
 
 ---

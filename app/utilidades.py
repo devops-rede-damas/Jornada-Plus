@@ -3,7 +3,8 @@ Funções auxiliares usadas em várias partes da aplicação.
 """
 import os
 from functools import wraps
-from flask import flash, redirect, url_for, current_app
+from urllib.parse import urlparse
+from flask import flash, redirect, url_for, current_app, request
 from flask_login import current_user
 
 
@@ -33,8 +34,29 @@ USUARIOS_SEM_ACESSO_MASSAGEM = (2, 4)
 USUARIOS_FORA_DA_FILA = (2, 4, 12)
 
 
+def _pagina_anterior_segura():
+    """Retorna a última página do usuário (referrer) se for segura.
+
+    Evita open redirect (só aceita o mesmo host) e evita loop, ignorando
+    qualquer referrer que aponte para a própria área de massagem.
+    Cai para a página inicial quando não há referrer confiável.
+    """
+    referrer = request.referrer
+    if referrer:
+        alvo = urlparse(referrer)
+        atual = urlparse(request.host_url)
+        mesmo_host = (not alvo.netloc) or (alvo.netloc == atual.netloc)
+        if mesmo_host and '/massagem' not in alvo.path:
+            return referrer
+    return url_for('principal.inicio')
+
+
 def massagem_permitido(funcao):
-    """Decorador que bloqueia o acesso dos usuários sem permissão (IDs 2 e 4)."""
+    """Decorador que bloqueia o acesso dos usuários sem permissão (IDs 2 e 4).
+
+    Além de o link não aparecer no menu, se um desses usuários acessar a rota
+    diretamente pela URL, ele é barrado e devolvido à última página em que estava.
+    """
     @wraps(funcao)
     def funcao_decorada(*args, **kwargs):
         if not current_user.is_authenticated:
@@ -42,7 +64,7 @@ def massagem_permitido(funcao):
             return redirect(url_for('autenticacao.login'))
         if current_user.id in USUARIOS_SEM_ACESSO_MASSAGEM:
             flash('Acesso negado.', 'danger')
-            return redirect(url_for('principal.inicio'))
+            return redirect(_pagina_anterior_segura())
         return funcao(*args, **kwargs)
     return funcao_decorada
 
