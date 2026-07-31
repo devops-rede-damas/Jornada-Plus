@@ -26,6 +26,25 @@ Crie o banco no MySQL:
 CREATE DATABASE app_pontointerno CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
+Importe o schema completo (cria todas as tabelas e já inclui usuários de teste):
+
+```bash
+mysql -u SEU_USUARIO -p app_pontointerno < migrations/000_schema_completo.sql
+```
+
+> Este arquivo já contém o estado final do banco (todas as migrations
+> incorporadas). Use-o para **instalações locais do zero**. Os arquivos
+> `001`–`004` são apenas o histórico incremental do banco de produção e **não**
+> devem ser executados junto com o `000_schema_completo.sql`.
+
+**Usuários de teste** (login pela *chapa*):
+
+| Chapa   | Senha      | Nível          |
+|---------|------------|----------------|
+| `admin` | `admin123` | Administrador  |
+| `coord` | `coord123` | Coordenador    |
+| `func`  | `func123`  | Funcionário    |
+
 ### 3. Configure as credenciais
 
 Copie o arquivo de exemplo e preencha com seus dados:
@@ -128,6 +147,7 @@ docker compose down
 │       └── img/
 │
 ├── migrations/              # Scripts SQL de evolução do banco
+│   ├── 000_schema_completo.sql     # Schema all-in-one + usuários de teste (setup local)
 │   ├── 001_coord_func.sql
 │   ├── 002_users_nivel.sql
 │   ├── 003_fila_massagem.sql       # Tabela da fila de massagem
