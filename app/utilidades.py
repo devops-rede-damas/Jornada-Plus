@@ -26,6 +26,24 @@ def admin_obrigatorio(funcao):
     return funcao_decorada
 
 
+def admin_estrito(funcao):
+    """Decorador que restringe acesso apenas ao Administrador (nível 1).
+
+    Diferente de `admin_obrigatorio`, coordenadores (nível 2) também são barrados.
+    Protege a rota mesmo quando acessada diretamente pela URL.
+    """
+    @wraps(funcao)
+    def funcao_decorada(*args, **kwargs):
+        if not current_user.is_authenticated:
+            flash('Faça login para acessar esta página.', 'warning')
+            return redirect(url_for('autenticacao.login'))
+        if current_user.nivel != 1:
+            flash('Acesso negado. Apenas administradores podem acessar esta página.', 'danger')
+            return redirect(url_for('principal.inicio'))
+        return funcao(*args, **kwargs)
+    return funcao_decorada
+
+
 # Usuários bloqueados de ver/acessar a página de massagem.
 USUARIOS_SEM_ACESSO_MASSAGEM = (2, 4)
 
