@@ -22,6 +22,8 @@ app/static/arquivos/*
 *.bak
 app/templates/_backup/
 app/static/img/backup/
+_backup_local_*/
+_backup*/
 
 # Sistema operacional
 Thumbs.db
