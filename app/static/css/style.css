@@ -994,6 +994,30 @@ textarea.form-control { resize: vertical; min-height: 100px; }
   border: 2px solid var(--gray-200);
 }
 
+/* Avatar com iniciais (fallback quando não há imagem) */
+.avatar-iniciais {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary-bg);
+  color: var(--primary);
+  font-size: .8125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.avatar-iniciais img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
 .colab-info { display: flex; align-items: center; gap: .75rem; }
 .colab-info .colab-name { font-weight: 500; color: var(--text-primary); }
 
@@ -1500,3 +1524,180 @@ div.dt-buttons > button.btn-export-excel:hover:not(.disabled),
   .dt-toolbar, .dt-footer { justify-content: center; }
   .dataTables_filter input { min-width: 0; width: 100%; }
 }
+
+/* ============================================================
+   USUÁRIOS (Admin) — Tabs + Modal
+   ============================================================ */
+.usuarios-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  text-align: left;
+}
+
+@media (max-width: 576px) {
+  .usuarios-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .usuarios-header .btn { width: 100%; }
+}
+
+.usuarios-tabs {
+  display: flex;
+  gap: .25rem;
+  padding: .75rem 1rem 0;
+  border-bottom: 1px solid var(--gray-200);
+  overflow-x: auto;
+}
+
+.usuarios-tab {
+  padding: .625rem 1.1rem;
+  font-size: .875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-bottom: 2px solid transparent;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  white-space: nowrap;
+  transition: var(--transition);
+}
+
+.usuarios-tab:hover { color: var(--primary); background: var(--primary-bg); }
+
+.usuarios-tab.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+}
+
+.usuarios-pane { display: none; }
+.usuarios-pane.active { display: block; }
+
+.btn-editar-usuario {
+  color: var(--text-secondary);
+  font-size: 1.125rem;
+  transition: var(--transition);
+}
+
+.btn-editar-usuario:hover { color: var(--primary); }
+
+/* Modal */
+.usuario-modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.4);
+  z-index: 9999;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 2rem 1rem;
+  overflow-y: auto;
+}
+
+.usuario-modal-overlay.active { display: flex; }
+
+.usuario-modal {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  width: 100%;
+  max-width: 640px;
+  margin: auto;
+}
+
+.usuario-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.usuario-modal-header h3 { font-size: 1.125rem; font-weight: 600; margin: 0; }
+
+.usuario-modal-close {
+  font-size: 1.375rem;
+  color: var(--text-secondary);
+  line-height: 1;
+}
+
+.usuario-modal-close:hover { color: var(--danger); }
+
+.usuario-modal-body { padding: 1.5rem; }
+
+.usuario-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: .75rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--gray-200);
+}
+
+.usuario-avatar-wrapper {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  margin: 0 auto 1.5rem;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.usuario-avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--gray-200);
+}
+
+.usuario-avatar-placeholder {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary-bg);
+  color: var(--primary);
+  font-size: 1.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  border: 3px solid var(--gray-200);
+}
+
+.usuario-avatar-wrapper .usuario-avatar {
+  position: absolute;
+  inset: 0;
+}
+
+.usuario-avatar-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(0,0,0,.45);
+  color: #fff;
+  font-size: 1.5rem;
+  opacity: 0;
+  transition: var(--transition);
+}
+
+.usuario-avatar-wrapper:hover .usuario-avatar-overlay { opacity: 1; }
+
+.usuario-remover-foto {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  margin: -0.75rem auto 1.5rem;
+  font-size: .8125rem;
+  font-weight: 500;
+  color: var(--danger);
+  transition: var(--transition);
+}
+
+.usuario-remover-foto:hover { color: #b91c1c; text-decoration: underline; }
